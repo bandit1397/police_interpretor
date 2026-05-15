@@ -155,6 +155,7 @@ Return ONLY the final translated sentence.
                 },
 
                 body: JSON.stringify({
+
                     contents: [
                         {
                             role: "user",
@@ -164,7 +165,13 @@ Return ONLY the final translated sentence.
                                 }
                             ]
                         }
-                    ]
+                    ],
+                    generationConfig: {
+                        temperature: 0.2,
+                        topP: 0.8,
+                        topK: 20
+                    }
+
                 })
             }
         );
