@@ -1,3 +1,13 @@
+# 개발시 사용
+npx kill-port 3000 && node server.js
+
+firebase deploy
+
+http://192.168.0.13:3000
+
+https://police-translator.web.app
+
+
 # prompt
 const prompt = `
 You are a professional real-time interpreter for police, hospital, airport, and emergency situations.
