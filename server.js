@@ -14,7 +14,7 @@ app.use(express.static("public"));
 /* =========================
    🔥 GEMINI API KEY
 ========================= */
-const GEMINI_API_KEY = "AIzaSyDGEvrUA7tJ8eE-vOFk5pP33p2ADusHGlI";
+const GEMINI_API_KEY = "";
 
 /* =========================
    🔥 MODEL
