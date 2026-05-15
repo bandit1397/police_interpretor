@@ -87,6 +87,17 @@ async function translate(text, fromLang, toLang) {
 
     try {
 
+        const langMap = {
+            ko: "Korean",
+            en: "English",
+            ja: "Japanese",
+            zh: "Chinese",
+            tl: "Tagalog",
+            th: "Thai",
+            id: "Indonesian",
+            ms: "Malay"
+        };
+
         const prompt = `
 You are a professional real-time interpreter for police, hospital, airport, and emergency situations.
 
@@ -136,8 +147,8 @@ If a word is unclear:
 - use surrounding context
 - choose the most likely intended meaning
 
-From: ${fromLang}
-To: ${toLang}
+From: ${langMap[fromLang]}
+To: ${langMap[toLang]}
 
 Text:
 ${text}
