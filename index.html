@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<title>Central Translator</title>
+
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+<style>
+
+body {
+    margin: 0;
+    font-family: Arial;
+    background: #f2f2f2;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* =========================
+   TOP BAR
+========================= */
+
+.header {
+    background: #111;
+    color: white;
+    padding: 12px;
+    text-align: center;
+    font-size: 18px;
+}
+
+/* =========================
+   SELECT AREA
+========================= */
+
+.controls {
+    display: flex;
+    gap: 8px;
+    padding: 10px;
+}
+
+select {
+    flex: 1;
+    padding: 10px;
+    font-size: 14px;
+}
+
+/* =========================
+   CHAT AREA
+========================= */
+
+#result {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* message bubble */
+.msg {
+    padding: 12px;
+    border-radius: 10px;
+    max-width: 85%;
+    font-size: 16px;
+    white-space: pre-wrap;
+}
+
+/* original */
+.me {
+    background: #d1e7ff;
+    align-self: flex-end;
+}
+
+/* translated */
+.ai {
+    background: #fff;
+    align-self: flex-start;
+}
+
+/* =========================
+   MIC BUTTON
+========================= */
+
+.footer {
+    padding: 15px;
+    display: flex;
+    justify-content: center;
+    background: #fff;
+}
+
+button {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    border: none;
+    background: #ff3b3b;
+    color: white;
+    font-size: 22px;
+}
+
+button:active {
+    transform: scale(0.95);
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="header">🌍 Central Translator</div>
+
+<div class="controls">
+
+<select id="fromLang">
+    <option value="ko">KO</option>
+    <option value="en">EN</option>
+    <option value="ja">JP</option>
+    <option value="zh">CN</option>
+</select>
+
+<select id="toLang">
+    <option value="en">EN</option>
+    <option value="ko">KO</option>
+    <option value="ja">JP</option>
+    <option value="zh">CN</option>
+</select>
+
+</div>
+
+<div id="result"></div>
+
+<div class="footer">
+    <button onclick="start()">🎤</button>
+</div>
+
+<script>
+
+/* =========================
+   SOCKET
+========================= */
+
+const socket = io("http://192.168.0.13:3000");
+const roomId = "police001";
+
+socket.emit("joinRoom", roomId);
+
+/* =========================
+   RECEIVE
+========================= */
+
+socket.on("receiveMessage", (data) => {
+
+    addMsg("me", data.original);
+    addMsg("ai", data.translated);
+
+    speak(data.translated, data.toLang);
+});
+
+/* =========================
+   UI MESSAGE
+========================= */
+
+function addMsg(type, text) {
+
+    const div = document.createElement("div");
+    div.className = "msg " + type;
+    div.innerText = text;
+
+    document.getElementById("result").appendChild(div);
+
+    document.getElementById("result").scrollTop =
+        document.getElementById("result").scrollHeight;
+}
+
+/* =========================
+   SPEECH
+========================= */
+
+function start() {
+
+    const SR =
+        window.SpeechRecognition ||
+        window.webkitSpeechRecognition;
+
+    if (!SR) {
+        alert("Not supported");
+        return;
+    }
+
+    const fromLang =
+        document.getElementById("fromLang").value;
+
+    const toLang =
+        document.getElementById("toLang").value;
+
+    const rec = new SR();
+
+    if (fromLang === "ko") rec.lang = "ko-KR";
+    if (fromLang === "en") rec.lang = "en-US";
+    if (fromLang === "ja") rec.lang = "ja-JP";
+    if (fromLang === "zh") rec.lang = "zh-CN";
+
+    rec.interimResults = false;
+
+    rec.onresult = (e) => {
+
+        const text =
+            e.results[0][0].transcript;
+
+        /* ❌ 삭제됨: 중복 원인 제거 */
+        // addMsg("me", text);
+
+        socket.emit("sendSpeech", {
+            roomId,
+            text,
+            fromLang,
+            toLang
+        });
+    };
+
+    rec.start();
+}
+
+/* =========================
+   TTS
+========================= */
+
+function speak(text, lang) {
+
+    speechSynthesis.cancel();
+
+    const ut =
+        new SpeechSynthesisUtterance(text);
+
+    if (lang === "ko") ut.lang = "ko-KR";
+    if (lang === "en") ut.lang = "en-US";
+    if (lang === "ja") ut.lang = "ja-JP";
+    if (lang === "zh") ut.lang = "zh-CN";
+
+    speechSynthesis.speak(ut);
+}
+
+</script>
+
+</body>
+</html>
